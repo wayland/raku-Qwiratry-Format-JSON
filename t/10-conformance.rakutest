@@ -1,0 +1,17 @@
+# Shared Qwiratry format contract, provided by the Qwiratry::Test kit.
+# Format-specific behaviour lives in t/01-json-behavior.rakutest.
+use Test;
+use lib 'lib';
+
+use Qwiratry::Format::JSON;
+use Qwiratry::Test::Format;
+
+conforms-to-format-contract(
+    format          => 'JSON',
+    parse-samples   => [ '{"b":2,"a":1}', '[1,2,3]', '42', '"hello"', 'true' ],
+    render-values   => [ { :a(1), :b(2) }, [1, 2, 3], 42, "hello", True ],
+    invalid-samples => [ '{bad', 'nope' ],
+    :lossless,
+);
+
+done-testing;

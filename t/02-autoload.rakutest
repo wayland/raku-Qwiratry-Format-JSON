@@ -1,0 +1,32 @@
+use Test;
+
+use Qwiratry::Format;
+use Qwiratry::Format::Base;
+
+plan 6;
+
+my $json-installed = $*REPO.repo-chain.grep(*.^can('installed'))
+	.map(*.installed).flat
+	.grep({ ?($_.meta<provides><Qwiratry::Format::JSON>) }).so;
+unless $json-installed {
+	skip-rest 'Qwiratry::Format::JSON is not installed';
+	exit;
+}
+
+ok 'JSON' (elem) Qwiratry::Format.formats(:type<Parse>),
+	'parse format discovery finds installed JSON backend';
+ok 'JSON' (elem) Qwiratry::Format.formats(:type<Render>),
+	'render format discovery finds installed JSON backend';
+
+my $parser = Qwiratry::Format.make(:type<Parse>, :format<JSON>);
+my $renderer = Qwiratry::Format.make(:type<Render>, :format<JSON>);
+
+isa-ok $parser, Qwiratry::Format::Base::Parse,
+	'parse factory autoloads the installed JSON backend';
+isa-ok $renderer, Qwiratry::Format::Base::Render,
+	'render factory autoloads the installed JSON backend';
+
+my $parsed = $parser.parse(q<{"b":2,"a":1}>);
+is $parsed{'a'}, 1, 'autoloaded parser returns the expected hash data';
+is $renderer.render(%(b => 2, a => 1)), '{"a":1,"b":2}',
+	'autoloaded renderer returns compact sorted JSON';

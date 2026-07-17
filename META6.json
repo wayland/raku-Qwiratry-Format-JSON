@@ -1,0 +1,24 @@
+{
+  "auth": "zef:wayland",
+  "depends": {
+    "runtime": {
+      "requires": [
+        "JSON::Fast",
+        "Qwiratry:ver<0.0.6+>"
+      ]
+    },
+    "test": {
+      "requires": [
+        "Qwiratry::Test:ver<0.0.1+>"
+      ]
+    }
+  },
+  "description": "JSON format backend for Qwiratry using JSON::Fast",
+  "name": "Qwiratry--Format--JSON",
+  "provides": {
+    "Qwiratry::Format::JSON": "lib/Qwiratry/Format/JSON.rakumod"
+  },
+  "resources": [
+  ],
+  "version": "0.0.1"
+}

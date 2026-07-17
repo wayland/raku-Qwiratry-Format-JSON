@@ -1,0 +1,24 @@
+use Test;
+use Qwiratry::Format;
+use Qwiratry::Format::Base;
+
+plan 7;
+
+use-ok 'Qwiratry::Format::JSON';
+
+isa-ok ::('Qwiratry::Format::JSON::Parse').new, Qwiratry::Format::Base::Parse,
+	'JSON parse class implements the parse contract';
+isa-ok ::('Qwiratry::Format::JSON::Render').new, Qwiratry::Format::Base::Render,
+	'JSON render class implements the render contract';
+
+is Qwiratry::Format.ensure-format(:type<Parse>, :format<JSON>),
+	'Qwiratry::Format::JSON::Parse',
+	'parse format resolves through the format factory';
+is Qwiratry::Format.ensure-format(:type<Render>, :format<JSON>),
+	'Qwiratry::Format::JSON::Render',
+	'render format resolves through the format factory';
+
+ok 'JSON' (elem) Qwiratry::Format.formats(:type<Parse>),
+	'parse format discovery includes JSON';
+ok 'JSON' (elem) Qwiratry::Format.formats(:type<Render>),
+	'render format discovery includes JSON';

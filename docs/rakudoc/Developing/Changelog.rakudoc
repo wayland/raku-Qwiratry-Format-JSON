@@ -1,0 +1,28 @@
+=begin rakudoc
+
+=TITLE Changelog
+
+=SUBTITLE User-visible changes by release
+
+=head1 Overview
+
+This changelog follows the shape of Keep a Changelog, adapted to Rakudoc.
+Versions use the C<META6.json> version number and release tags use the
+C<release-x.y.z> convention.
+
+=head1 0.0.1 - 2026-07-04
+
+=head2 Added
+
+=item Initial release of the C<Qwiratry--Format--JSON> distribution, providing
+C<Qwiratry::Format::JSON> as a real JSON parse/render backend for Qwiratry.
+
+=item JSON parsing and rendering through L<JSON::Fast>.
+
+=item Compact rendering by default, with support for C<:pretty>,
+C<:spacing>, and C<:sorted-keys>.
+
+=item Tests for explicit loading, format discovery, direct slang evaluation,
+and autoload through installed C<provides> metadata.
+
+=end rakudoc
