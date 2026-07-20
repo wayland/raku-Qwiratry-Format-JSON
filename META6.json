@@ -14,7 +14,7 @@
     }
   },
   "description": "JSON format backend for Qwiratry using JSON::Fast",
-  "name": "Qwiratry--Format--JSON",
+  "name": "Qwiratry::Format::JSON",
   "provides": {
     "Qwiratry::Format::JSON": "lib/Qwiratry/Format/JSON.rakumod"
   },

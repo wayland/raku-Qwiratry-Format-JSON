@@ -14,7 +14,7 @@ C<release-x.y.z> convention.
 
 =head2 Added
 
-=item Initial release of the C<Qwiratry--Format--JSON> distribution, providing
+=item Initial release of the C<Qwiratry::Format::JSON> distribution, providing
 C<Qwiratry::Format::JSON> as a real JSON parse/render backend for Qwiratry.
 
 =item JSON parsing and rendering through L<JSON::Fast>.
