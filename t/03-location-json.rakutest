@@ -1,5 +1,5 @@
 #!/usr/bin/env raku
-#| Location::JSON DatabaseStorage (Format::JSON dist)
+#| Location::JSON DatabaseStorage (Format::JSON dist) — plan §16.1.5
 use Test;
 use lib 'lib';
 
@@ -11,10 +11,12 @@ use Qwiratry::Format::JSON;
 use Qwiratry::DatabaseStorage::Location::Tree;
 use Qwiratry::DatabaseStorage::Location::JSON;
 use Qwiratry::Location::Base;
+use X::Qwiratry;
+use JSON::Fast;  # from-json for post-flush structure checks
 
-plan 4;
+plan 5;
 
-subtest 'Location::JSON create + add-row with Format::JSON' => {
+subtest 'omit-args defaults: create + add-row + reopen' => {
 	plan 5;
 	my $dir = $*TMPDIR.add('qwiratry-fmt-loc-json-' ~ $*PID ~ '-' ~ now.Int);
 	$dir.mkdir;
@@ -68,25 +70,91 @@ subtest 'overwrite Destination flushes' => {
 	is $t2[0]<n>, 9, 'overwrite persisted';
 };
 
-subtest 'document-to-rows hooks' => {
-	plan 3;
+subtest 'document-to-rows hooks + §8 defaults advertised' => {
+	plan 6;
 	my $db = Qwiratry::DatabaseStorage::Location::JSON.new(
 		location => '/tmp',
 	);
 	is $db.format, 'JSON', 'default format is JSON';
+	ok $db ~~ Qwiratry::DatabaseStorage::Location::Tree,
+		'JSON is a Location::Tree';
+	ok $db.table-selector.defined, 'default table-selector';
+	ok $db.transformer.defined, 'default transformer';
 	is $db.document-to-rows([{ a => 1 }, { a => 2 }]).elems, 2, 'array → rows';
 	is $db.document-to-rows({ a => 1 }).elems, 1, 'object → one row';
 };
 
-subtest 'Tree subclass advertises §8 JSON projection defaults' => {
+subtest 'nested table-selector override; flush preserves unselected structure' => {
 	plan 5;
-	my $db = Qwiratry::DatabaseStorage::Location::JSON.new(
-		location => '/tmp',
+	my $dir = $*TMPDIR.add('qwiratry-fmt-loc-json-nested-' ~ $*PID ~ '-' ~ now.Int);
+	$dir.mkdir;
+	LEAVE try { .unlink for $dir.dir; $dir.rmdir };
+
+	# Literal JSON string (avoid Hash→to-json quirks that can split one object).
+	$dir.add('roster.json').spurt:
+		'{"meta":{"v":1,"note":"keep-me"},"people":[{"name":"Ada","age":36}]}';
+
+	my &nested-rows = sub (Mu $doc) {
+		slip(($doc<people> // []).list)
+	};
+	# Merge only the people array; leave meta (and other keys) untouched.
+	my &merge-people = sub (Mu $doc, @rows) {
+		my %out = $doc ~~ Associative ?? %($doc) !! %();
+		%out<people> = [@rows.map({ %($_) })];
+		%out
+	};
+
+	my $db = Database.new(
+		storage-type => 'Location::JSON',
+		location => ~$dir,
 	);
-	ok $db ~~ Qwiratry::DatabaseStorage::Location::Tree,
-		'JSON is a Location::Tree';
-	ok $db.table-selector.defined, 'default table-selector';
-	ok $db.row-selector.defined, 'default row-selector';
-	ok $db.field-projection.defined, 'default field-projection';
-	ok $db.transformer.defined, 'default transformer';
+	my $t = $db.useTable(
+		name => 'roster',
+		action => 'use',
+		row-selector => &nested-rows,
+		transformer => &merge-people,
+	);
+	is $t.elems, 1, 'loaded nested people row';
+	is $t[0]<name>, 'Ada', 'nested field';
+
+	$t.add-row({ name => 'Grace', age => 85 });
+	is $t.elems, 2, 'second row in memory';
+
+	my $db2 = Database.new(
+		storage-type => 'Location::JSON',
+		location => ~$dir,
+	);
+	my $t2 = $db2.useTable(
+		name => 'roster',
+		action => 'use',
+		row-selector => &nested-rows,
+		transformer => &merge-people,
+	);
+	is $t2.elems, 2, 'reopened has two people rows';
+
+	my $parsed = from-json($dir.add('roster.json').slurp);
+	is-deeply $parsed<meta>, { v => 1, note => 'keep-me' },
+		'flush preserved unselected meta';
+};
+
+subtest 'unresolved stages: blank Tree (XML-style defaults) fails clearly' => {
+	plan 3;
+	my $dir = $*TMPDIR.add('qwiratry-fmt-loc-json-blank-' ~ $*PID ~ '-' ~ now.Int);
+	$dir.mkdir;
+	LEAVE try { .unlink for $dir.dir; $dir.rmdir };
+
+	# Core Location::Tree has no §8 defaults (same as planned Location::XML).
+	my $db = Database.new(
+		storage-type => 'Location::Tree',
+		location => ~$dir,
+		format => 'JSON',
+	);
+	try {
+		$db.useTable(name => 'items', action => 'can-create');
+	}
+	my $ex = $!;
+	ok $ex ~~ X::Qwiratry::DatabaseStorage::ProjectionUnresolved,
+		'ProjectionUnresolved on blank Tree open';
+	ok $ex.stages.elems >= 3, 'multiple missing stages listed';
+	like $ex.gist(), /table\-selector/, 'gist names a stage';
 };

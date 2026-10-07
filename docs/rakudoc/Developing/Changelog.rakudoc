@@ -21,6 +21,11 @@ root/identity/object-key table shape as §8 Format projection defaults
 unchanged; callers may override selectors / C<:transformer> for nested
 tables.
 
+=item Location::JSON tests cover omit-args defaults, nested
+C<:row-selector> / C<:transformer> overrides that preserve unselected
+document structure on flush, and clear
+C<ProjectionUnresolved> errors for blank-Tree (XML-style) opens.
+
 =head2 Added
 
 =item C<Qwiratry::DatabaseStorage::Location::JSON> — Location-backed tables
