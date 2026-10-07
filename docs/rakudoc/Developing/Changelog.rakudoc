@@ -10,6 +10,22 @@ This changelog follows the shape of Keep a Changelog, adapted to Rakudoc.
 Versions use the C<META6.json> version number and release tags use the
 C<release-x.y.z> convention.
 
+=head1 Unreleased
+
+=head2 Changed
+
+=item C<Qwiratry::DatabaseStorage::Location::JSON> now subclasses core
+C<Qwiratry::DatabaseStorage::Location::Tree> and advertises today's
+root/identity/object-key table shape as §8 Format projection defaults
+(plus a default merge transformer). Omit-args C<useTable> behaviour is
+unchanged; callers may override selectors / C<:transformer> for nested
+tables.
+
+=head2 Added
+
+=item C<Qwiratry::DatabaseStorage::Location::JSON> — Location-backed tables
+using C<Format::JSON> (array-of-objects ↔ rows).
+
 =head1 0.0.1 - 2026-07-04
 
 =head2 Added

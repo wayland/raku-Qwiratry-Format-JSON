@@ -21,12 +21,12 @@ ok 'JSON' (elem) Qwiratry::Format.formats(:type<Render>),
 my $parser = Qwiratry::Format.make(:type<Parse>, :format<JSON>);
 my $renderer = Qwiratry::Format.make(:type<Render>, :format<JSON>);
 
-isa-ok $parser, Qwiratry::Format::Base::Parse,
+isa-ok $parser, Qwiratry::Format::Base::ParseWalkable,
 	'parse factory autoloads the installed JSON backend';
-isa-ok $renderer, Qwiratry::Format::Base::Render,
+isa-ok $renderer, Qwiratry::Format::Base::RenderWalkable,
 	'render factory autoloads the installed JSON backend';
 
-my $parsed = $parser.parse(q<{"b":2,"a":1}>);
+my $parsed = $parser.parse-walkable(q<{"b":2,"a":1}>);
 is $parsed{'a'}, 1, 'autoloaded parser returns the expected hash data';
-is $renderer.render(%(b => 2, a => 1)), '{"a":1,"b":2}',
+is $renderer.render-walkable(%(b => 2, a => 1)), '{"a":1,"b":2}',
 	'autoloaded renderer returns compact sorted JSON';

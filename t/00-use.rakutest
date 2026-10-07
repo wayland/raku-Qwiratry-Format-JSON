@@ -2,13 +2,14 @@ use Test;
 use Qwiratry::Format;
 use Qwiratry::Format::Base;
 
-plan 7;
+plan 8;
 
 use-ok 'Qwiratry::Format::JSON';
+use-ok 'Qwiratry::DatabaseStorage::Location::JSON';
 
-isa-ok ::('Qwiratry::Format::JSON::Parse').new, Qwiratry::Format::Base::Parse,
+isa-ok ::('Qwiratry::Format::JSON::Parse').new, Qwiratry::Format::Base::ParseWalkable,
 	'JSON parse class implements the parse contract';
-isa-ok ::('Qwiratry::Format::JSON::Render').new, Qwiratry::Format::Base::Render,
+isa-ok ::('Qwiratry::Format::JSON::Render').new, Qwiratry::Format::Base::RenderWalkable,
 	'JSON render class implements the render contract';
 
 is Qwiratry::Format.ensure-format(:type<Parse>, :format<JSON>),

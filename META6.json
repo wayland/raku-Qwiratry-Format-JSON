@@ -13,10 +13,11 @@
       ]
     }
   },
-  "description": "JSON format backend for Qwiratry using JSON::Fast",
+  "description": "JSON format backend for Qwiratry using JSON::Fast, plus Location::JSON table storage",
   "name": "Qwiratry::Format::JSON",
   "provides": {
-    "Qwiratry::Format::JSON": "lib/Qwiratry/Format/JSON.rakumod"
+    "Qwiratry::Format::JSON": "lib/Qwiratry/Format/JSON.rakumod",
+    "Qwiratry::DatabaseStorage::Location::JSON": "lib/Qwiratry/DatabaseStorage/Location/JSON.rakumod"
   },
   "resources": [
   ],

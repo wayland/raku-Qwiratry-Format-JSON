@@ -7,20 +7,20 @@ use Qwiratry::Format::JSON;
 my $parser = Qwiratry::Format.make(:type<Parse>, :format<JSON>);
 my $renderer = Qwiratry::Format.make(:type<Render>, :format<JSON>);
 
-my $parsed = $parser.parse(q<[1,true,null,{"b":2,"a":1}]>);
+my $parsed = $parser.parse-walkable(q<[1,true,null,{"b":2,"a":1}]>);
 is $parsed[0], 1, 'parse preserves integer values';
 ok $parsed[1], 'parse preserves boolean true';
 ok !$parsed[2].defined, 'parse keeps null as an undefined value';
 is $parsed[3]{'a'}, 1, 'parse reads nested hash values';
 is $parsed[3]{'b'}, 2, 'parse reads nested hash values regardless of key order';
-is $parser.parse('42'), 42, 'parse supports top-level numeric values';
-is $parser.parse('false'), False, 'parse supports top-level boolean values';
+is $parser.parse-walkable('42'), 42, 'parse supports top-level numeric values';
+is $parser.parse-walkable('false'), False, 'parse supports top-level boolean values';
 
 my %row = b => 2, a => 1;
-my $compact = $renderer.render(%row);
-my $pretty = $renderer.render(%row, :pretty(True), :spacing(4));
-my $array-json = $renderer.render([1, 2, 3]);
-my $bool-json = $renderer.render(True);
+my $compact = $renderer.render-walkable(%row);
+my $pretty = $renderer.render-walkable(%row, :pretty(True), :spacing(4));
+my $array-json = $renderer.render-walkable([1, 2, 3]);
+my $bool-json = $renderer.render-walkable(True);
 
 is $compact, '{"a":1,"b":2}',
 	'render is compact by default and sorts keys for stable output';

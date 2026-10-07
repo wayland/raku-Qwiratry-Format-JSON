@@ -1,0 +1,92 @@
+#!/usr/bin/env raku
+#| Location::JSON DatabaseStorage (Format::JSON dist)
+use Test;
+use lib 'lib';
+
+# Prefer sibling core checkout when developing both trees together.
+use lib '../raku-Qwiratry/lib';
+
+use Qwiratry::TaOP;
+use Qwiratry::Format::JSON;
+use Qwiratry::DatabaseStorage::Location::Tree;
+use Qwiratry::DatabaseStorage::Location::JSON;
+use Qwiratry::Location::Base;
+
+plan 4;
+
+subtest 'Location::JSON create + add-row with Format::JSON' => {
+	plan 5;
+	my $dir = $*TMPDIR.add('qwiratry-fmt-loc-json-' ~ $*PID ~ '-' ~ now.Int);
+	$dir.mkdir;
+	LEAVE try { .unlink for $dir.dir; $dir.rmdir };
+
+	my $db = Database.new(
+		storage-type => 'Location::JSON',
+		location => ~$dir,
+	);
+	my $t = $db.useTable(name => 'people', action => 'can-create');
+	$t.add-row({ name => 'Ada', age => 36 });
+	is $t.elems, 1, 'one row in memory';
+	my $file = $dir.add('people.json');
+	ok $file.e, 'people.json written';
+	like $file.slurp, /Ada/, 'file contains Ada';
+
+	my $db2 = Database.new(
+		storage-type => 'Location::JSON',
+		location => ~$dir,
+	);
+	my $t2 = $db2.useTable(name => 'people', action => 'use');
+	is $t2.elems, 1, 'reopened table has one row';
+	is $t2[0]<name>, 'Ada', 'reloaded field';
+};
+
+subtest 'overwrite Destination flushes' => {
+	plan 2;
+	my $dir = $*TMPDIR.add('qwiratry-fmt-loc-json-ow-' ~ $*PID ~ '-' ~ now.Int);
+	$dir.mkdir;
+	LEAVE try { .unlink for $dir.dir; $dir.rmdir };
+
+	my $db = Database.new(
+		storage-type => 'Location::JSON',
+		location => ~$dir,
+	);
+	my $t = $db.useTable(name => 'nums', action => 'can-create');
+	$t.sink-rows(
+		Qwiratry::Location::Base::DestinationMode::overwrite,
+		[$(%(n => 1)), $(%(n => 2))],
+	);
+	is $t.elems, 2, 'two rows';
+	$t.sink-rows(
+		Qwiratry::Location::Base::DestinationMode::overwrite,
+		[$(%(n => 9))],
+	);
+	my $db2 = Database.new(
+		storage-type => 'Location::JSON',
+		location => ~$dir,
+	);
+	my $t2 = $db2.useTable(name => 'nums', action => 'use');
+	is $t2[0]<n>, 9, 'overwrite persisted';
+};
+
+subtest 'document-to-rows hooks' => {
+	plan 3;
+	my $db = Qwiratry::DatabaseStorage::Location::JSON.new(
+		location => '/tmp',
+	);
+	is $db.format, 'JSON', 'default format is JSON';
+	is $db.document-to-rows([{ a => 1 }, { a => 2 }]).elems, 2, 'array → rows';
+	is $db.document-to-rows({ a => 1 }).elems, 1, 'object → one row';
+};
+
+subtest 'Tree subclass advertises §8 JSON projection defaults' => {
+	plan 5;
+	my $db = Qwiratry::DatabaseStorage::Location::JSON.new(
+		location => '/tmp',
+	);
+	ok $db ~~ Qwiratry::DatabaseStorage::Location::Tree,
+		'JSON is a Location::Tree';
+	ok $db.table-selector.defined, 'default table-selector';
+	ok $db.row-selector.defined, 'default row-selector';
+	ok $db.field-projection.defined, 'default field-projection';
+	ok $db.transformer.defined, 'default transformer';
+};

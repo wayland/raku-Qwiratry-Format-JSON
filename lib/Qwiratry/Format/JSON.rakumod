@@ -20,7 +20,7 @@ supports C<:spacing> and C<:sorted-keys>.
 use JSON::Fast;
 use Qwiratry::Format::Base;
 
-class Qwiratry::Format::JSON::Parse is Qwiratry::Format::Base::Parse {
+class Qwiratry::Format::JSON::Parse is Qwiratry::Format::Base::ParseWalkable {
 
 	=begin pod
 
@@ -31,12 +31,12 @@ class Qwiratry::Format::JSON::Parse is Qwiratry::Format::Base::Parse {
 	Parse JSON text into ordinary Raku data structures using L<JSON::Fast>.
 
 	=end pod
-	method parse(Str $input-string --> Mu) {
+	method parse-walkable(Str $input-string --> Mu) {
 		from-json($input-string)
 	}
 }
 
-class Qwiratry::Format::JSON::Render is Qwiratry::Format::Base::Render {
+class Qwiratry::Format::JSON::Render is Qwiratry::Format::Base::RenderWalkable {
 
 	=begin pod
 
@@ -50,7 +50,7 @@ class Qwiratry::Format::JSON::Render is Qwiratry::Format::Base::Render {
 	output.
 
 	=end pod
-	method render(Mu $data, *%options --> Str) {
+	method render-walkable(Mu $data, *%options --> Str) {
 		my $pretty = %options<pretty> // False;
 		my $spacing = %options<spacing> // 2;
 		my $sorted-keys = %options<sorted-keys> // True;
