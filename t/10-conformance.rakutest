@@ -2,8 +2,8 @@
 # Format-specific behaviour lives in t/01-json-behavior.rakutest.
 use Test;
 use lib 'lib';
-use lib '../raku-Qwiratry/lib';
-use lib '../raku-Qwiratry-Test/lib';
+# Needs Qwiratry + Qwiratry::Test: set RAKULIB (or -I) for sibling checkouts,
+# e.g. RAKULIB=../raku-Qwiratry/lib,../raku-Qwiratry-Test/lib
 
 use Qwiratry::Format::JSON;
 use Qwiratry::Test::Format;

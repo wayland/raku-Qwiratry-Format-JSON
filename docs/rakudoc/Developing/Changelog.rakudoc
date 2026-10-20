@@ -15,8 +15,8 @@ C<release-x.y.z> convention.
 =head2 Changed
 
 =item Location::JSON tests call explicit C<.flush> after mutations (core
-Tree no longer auto-flushes; plan §16.4.7 / §16.4.8). Conformance test
-loads sibling C<Qwiratry::Test> via C<use lib>.
+Tree no longer auto-flushes; plan §16.4.7 / §16.4.8). Sibling / uninstalled
+deps are found via C<RAKULIB> or C<-I> (no hardcoded checkout paths).
 
 =item Default C<:path-transformer> with C<EMPTY> mold (plan §10.3 /
 §16.4.3): ancestors become C<{}>, table-site / row-collection leaves

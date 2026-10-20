@@ -2,9 +2,8 @@
 #| Location::JSON DatabaseStorage (Format::JSON dist) — plan §16.1.5
 use Test;
 use lib 'lib';
-
-# Prefer sibling core checkout when developing both trees together.
-use lib '../raku-Qwiratry/lib';
+# Sibling / uninstalled deps: set RAKULIB (or pass -I) when running tests —
+# e.g. RAKULIB=../raku-Qwiratry/lib. Installed modules need no extra path.
 
 use Qwiratry::TaOP;
 use Qwiratry::Format::JSON;
