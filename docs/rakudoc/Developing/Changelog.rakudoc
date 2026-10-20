@@ -14,6 +14,17 @@ C<release-x.y.z> convention.
 
 =head2 Changed
 
+=item Location::JSON tests call explicit C<.flush> after mutations (core
+Tree no longer auto-flushes; plan §16.4.7 / §16.4.8). Conformance test
+loads sibling C<Qwiratry::Test> via C<use lib>.
+
+=item Default C<:path-transformer> with C<EMPTY> mold (plan §10.3 /
+§16.4.3): ancestors become C<{}>, table-site / row-collection leaves
+become C<[]>. Covered by C<t/03-location-json.rakutest>.
+
+=item Default C<:transformer> is a C<Transformer> mold over
+C<$*CONTEXT> rows (plan Q18 / §16.4.5). Callable overrides still work.
+
 =item C<Qwiratry::DatabaseStorage::Location::JSON> now subclasses core
 C<Qwiratry::DatabaseStorage::Location::Tree> and advertises today's
 root/identity/object-key table shape as §8 Format projection defaults
@@ -21,9 +32,9 @@ root/identity/object-key table shape as §8 Format projection defaults
 unchanged; callers may override selectors / C<:transformer> for nested
 tables.
 
-=item Location::JSON tests cover omit-args defaults, nested
-C<:row-selector> / C<:transformer> overrides that preserve unselected
-document structure on flush, and clear
+=item Location::JSON tests and module examples cover omit-args defaults,
+nested C<:row-selector> / C<:transformer> overrides that preserve
+unselected document structure on flush, and clear
 C<ProjectionUnresolved> errors for blank-Tree (XML-style) opens.
 
 =head2 Added

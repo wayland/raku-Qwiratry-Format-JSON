@@ -1,7 +1,19 @@
 use v6.e.PREVIEW;
 
 use Qwiratry::DatabaseStorage::Location::Tree;
+use Qwiratry::Mold::Slang;
+use Qwiratry::Transformer;
 use X::Qwiratry;
+
+# §8 default merge Transformer (plan Q18 / §16.4.5): rebuild document from
+# $*CONTEXT<rows>. Nested tables override :transformer on useTable.
+transformer LocationJSONDefaultMerge {
+	mold TOP
+		when { True }
+		do {
+			[@($*CONTEXT<rows> // []).map({ %($_) })]
+		}
+}
 
 =begin pod
 
@@ -24,11 +36,14 @@ one-row table (table root = document parse root).
 =item Render/flush: rows → a JSON array of objects (empty table → C<[]>).
 
 Override C<:table-selector> / C<:row-selector> / C<:field-projection> /
-C<:transformer> on C<useTable> (or the constructor) for nested tables.
+C<:transformer> / C<:path-transformer> on C<useTable> (or the constructor)
+for nested tables. Default C<:path-transformer> is core
+C<associative-path-transformer> (plan §10.3 / §16.4.3).
 
 =begin code
 
 use Qwiratry::TaOP;
+use Qwiratry::Mold::Slang;
 use Qwiratry::DatabaseStorage::Location::JSON;  # or rely on Database load-library
 
 my $db = Database.new(
@@ -37,9 +52,32 @@ my $db = Database.new(
 );
 my $t = $db.useTable(name => 'people', action => 'can-create');
 $t.add-row({ name => 'Ada', age => 36 });
+$t.storage-object.flush;  # Tree sync is explicit (plan Q20)
 # → ./data/people.json
 
+# Nested table under a key (override §8 defaults; keep sibling structure).
+# Merge mold sees $*CONTEXT<rows> (plan Q18); topic is the document.
+clear-collected-molds();
+transformer MergePeople {
+	mold TOP
+		when { True }
+		do {
+			my %out = $_ ~~ Associative ?? %($_) !! %();
+			%out<people> = [@($*CONTEXT<rows> // []).map({ %($_) })];
+			%out
+		}
+}
+# my $roster = $db.useTable(
+#	name => 'roster',
+#	action => 'use',
+#	row-selector => sub (Mu $doc) { slip(($doc<people> // []).list) },
+#	transformer => MergePeople.new,
+# );
+
 =end code
+
+See also C<t/03-location-json.rakutest> and the core Qwiratry plan
+C<docs/rakudoc/Developing/DatabaseStorage-Location-Tree.md>.
 
 =end pod
 
@@ -96,12 +134,15 @@ class Qwiratry::DatabaseStorage::Location::JSON
 			};
 		}
 
-		# Default merge: replace document with the row array (today's
-		# rows-to-document). Nested tables need an override transformer.
+		# Default merge: slang Transformer above (plan Q18 / §16.4.5).
+		# Nested tables override :transformer (Callable still accepted).
 		unless self.transformer.defined {
-			self.transformer = sub (Mu $document, @rows) {
-				[@rows.map({ %($_) })]
-			};
+			self.transformer = LocationJSONDefaultMerge.new;
+		}
+
+		# §10.3: EMPTY mold — ancestors {}, table-site / row-collection [].
+		unless self.path-transformer.defined {
+			self.path-transformer = self.associative-path-transformer;
 		}
 	}
 }
