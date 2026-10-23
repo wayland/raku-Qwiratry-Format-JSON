@@ -11,7 +11,11 @@ transformer LocationJSONDefaultMerge {
 	mold TOP
 		when { True }
 		do {
-			[@($*CONTEXT<rows> // []).map({ %($_) })]
+			# Push (not .Array on a Seq of Hashes): Hash is Iterable, so
+			# `$seq.Array` / `[ $seq ]` flatten or nest wrongly.
+			my @out;
+			@out.push(%($_)) for @($*CONTEXT<rows> // []);
+			@out
 		}
 }
 

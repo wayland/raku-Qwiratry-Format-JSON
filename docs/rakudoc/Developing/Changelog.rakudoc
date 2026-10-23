@@ -12,6 +12,13 @@ C<release-x.y.z> convention.
 
 =head1 Unreleased
 
+=head2 Fixed
+
+=item C<LocationJSONDefaultMerge>: build the document Array by C<.push>ing
+row hashes (Hash is Iterable — C<$seq.Array> / C<[ $seq ]> flattened or
+nested the rows). Needs core Transformer HOW mold persistence so the
+precompiled slang merge still has molds at C<TWEAK>.
+
 =head2 Changed
 
 =item Location::JSON tests call explicit C<.flush> after mutations (core
