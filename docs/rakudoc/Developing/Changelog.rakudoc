@@ -12,6 +12,8 @@ C<release-x.y.z> convention.
 
 =head1 Unreleased
 
+=head1 0.0.2 - 2026-10-26
+
 =head2 Fixed
 
 =item C<LocationJSONDefaultMerge>: build the document Array by C<.push>ing
